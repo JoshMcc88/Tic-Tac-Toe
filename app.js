@@ -1,8 +1,9 @@
+
 var origBoard;
 const huPlayer = 'O';
 const aiPlayer = 'X';
 const winCombos = [
-	[0, 2, 1],
+	[0, 1, 2],
 	[3, 4, 5],
 	[6, 7, 8],
 	[0, 3, 6],
@@ -13,11 +14,10 @@ const winCombos = [
 ]
 
 const cells = document.querySelectorAll('.cell');
-
 startGame();
 
 function startGame() {
-	document.querySelector(".endgame").style.display="none";
+	document.querySelector(".endgame").style.display = "none";
 	origBoard = Array.from(Array(9).keys());
 	for (var i = 0; i < cells.length; i++) {
 		cells[i].innerText = '';
@@ -27,21 +27,21 @@ function startGame() {
 }
 
 function turnClick(square) {
-	if(typeof origBoard[square.target.id] == 'number'){
-		turn(square.target.id, huPlayer);
-		if(!checkTie()) turn(bestSpot(), aiPlayer);
+	if (typeof origBoard[square.target.id] == 'number') {
+		turn(square.target.id, huPlayer)
+		if (!checkWin(origBoard, huPlayer) && !checkTie()) turn(bestSpot(), aiPlayer);
 	}
 }
 
 function turn(squareId, player) {
 	origBoard[squareId] = player;
-	document.getElementById(squareId). innerText = player;
-	let gameWon = checkWin(origBoard, player);
+	document.getElementById(squareId).innerText = player;
+	let gameWon = checkWin(origBoard, player)
 	if (gameWon) gameOver(gameWon)
 }
 
 function checkWin(board, player) {
-	let plays = board.reduce((a, e, i) => 
+	let plays = board.reduce((a, e, i) =>
 		(e === player) ? a.concat(i) : a, []);
 	let gameWon = null;
 	for (let [index, win] of winCombos.entries()) {
@@ -55,17 +55,17 @@ function checkWin(board, player) {
 
 function gameOver(gameWon) {
 	for (let index of winCombos[gameWon.index]) {
-		document.getElementById(index).style.backgroundColor = 
+		document.getElementById(index).style.backgroundColor =
 			gameWon.player == huPlayer ? "blue" : "red";
 	}
 	for (var i = 0; i < cells.length; i++) {
 		cells[i].removeEventListener('click', turnClick, false);
 	}
-	declareWinner(gameWon.player == huPlayer ? "You win!" : "You lose!")
+	declareWinner(gameWon.player == huPlayer ? "You win!" : "You lose.");
 }
 
 function declareWinner(who) {
-	document.querySelector(".endgame").style.display = 'block';
+	document.querySelector(".endgame").style.display = "block";
 	document.querySelector(".endgame .text").innerText = who;
 }
 
@@ -77,31 +77,30 @@ function bestSpot() {
 	return minimax(origBoard, aiPlayer).index;
 }
 
-function checkTie () {
+function checkTie() {
 	if (emptySquares().length == 0) {
-		for (var i = 0; i < cells.length; i++){
-			cells[i].style.backgroundColor = 'green';
+		for (var i = 0; i < cells.length; i++) {
+			cells[i].style.backgroundColor = "green";
 			cells[i].removeEventListener('click', turnClick, false);
 		}
-		declareWinner("Tie Game!");
-		return true
+		declareWinner("Tie Game!")
+		return true;
 	}
 	return false;
 }
 
 function minimax(newBoard, player) {
-	var availSpots = emptySquares(newBoard);
+	var availSpots = emptySquares();
 
-	if(checkWin(newBoard, player)) {
-		return{score: -10};
-	}else if (checkWin(newBoard, aiPlayer)){
-		return{score: 20};
-	}else if (availSpots.length === 0) {
-		return{score: 0};
+	if (checkWin(newBoard, huPlayer)) {
+		return {score: -10};
+	} else if (checkWin(newBoard, aiPlayer)) {
+		return {score: 10};
+	} else if (availSpots.length === 0) {
+		return {score: 0};
 	}
-
 	var moves = [];
-	for(var i = 0; i < availSpots.length; i++) {
+	for (var i = 0; i < availSpots.length; i++) {
 		var move = {};
 		move.index = newBoard[availSpots[i]];
 		newBoard[availSpots[i]] = player;
@@ -109,10 +108,11 @@ function minimax(newBoard, player) {
 		if (player == aiPlayer) {
 			var result = minimax(newBoard, huPlayer);
 			move.score = result.score;
-		}else {
-			var result = minimax(newBoard, huPlayer);
+		} else {
+			var result = minimax(newBoard, aiPlayer);
 			move.score = result.score;
 		}
+
 		newBoard[availSpots[i]] = move.index;
 
 		moves.push(move);
@@ -121,16 +121,16 @@ function minimax(newBoard, player) {
 	var bestMove;
 	if(player === aiPlayer) {
 		var bestScore = -10000;
-		for(var i = 0; i < moves.length; i++){
-			if(moves[i].score > bestScore) {
+		for(var i = 0; i < moves.length; i++) {
+			if (moves[i].score > bestScore) {
 				bestScore = moves[i].score;
 				bestMove = i;
 			}
 		}
-	}else {
+	} else {
 		var bestScore = 10000;
-		for(var i = 0; i < moves.length; i++){
-			if(moves[i].score < bestScore) {
+		for(var i = 0; i < moves.length; i++) {
+			if (moves[i].score < bestScore) {
 				bestScore = moves[i].score;
 				bestMove = i;
 			}
